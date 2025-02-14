@@ -1,7 +1,4 @@
-import { defineConfig } from "tinacms";
-import { BlogCollection } from "./collections/blog";
-import { GlobalConfigCollection } from "./collections/global-config";
-import { PageCollection } from "./collections/page";
+import { defineConfig, type Template, type TinaField } from "tinacms";
 
 // Your hosting provider likely exposes this as an environment variable
 const branch =
@@ -9,6 +6,87 @@ const branch =
   process.env.VERCEL_GIT_COMMIT_REF ||
   process.env.HEAD ||
   "main";
+
+
+const componentTemplates: Template[] = [
+  {
+    name: "LinkButton",
+    label: "Link Button",
+    fields: [
+      {
+        name: "text",
+        label: "Text",
+        type: "string",
+      },
+      {
+        name: "to",
+        label: "To",
+        type: "string",
+      },
+    ],
+  },
+]
+
+const blockTemplates: Template[] = [
+  {
+    name: "Container",
+    label: "Container",
+    fields: [
+      {
+        name: "children",
+        label: "Content",
+        type: "rich-text",
+        templates: componentTemplates
+      }
+    ]
+  },
+  {
+    name: "Hero",
+    label: "Hero",
+    fields: [
+      {
+        name: "accent",
+        label: "Akzent",
+        type: "boolean",
+      },
+      {
+        name: "image",
+        label: "Hero-Bild",
+        type: "image",
+      },
+      {
+        name: "children",
+        label: "Content",
+        type: "rich-text",
+        templates: componentTemplates
+      },
+    ]
+  },
+]
+
+const basePageFields: TinaField[] = [
+  {
+    name: "title",
+    label: "Title",
+    type: "string",
+    isTitle: true,
+    required: true,
+  },
+  {
+    name: "description",
+    label: "Beschreibung",
+    type: "string",
+    required: true,
+  },
+  {
+    name: 'body',
+    label: 'Content',
+    type: 'rich-text',
+    isBody: true,
+    templates: blockTemplates
+  },
+]
+
 
 export default defineConfig({
   branch,
@@ -28,12 +106,22 @@ export default defineConfig({
       publicFolder: "public",
     },
   },
-  // See docs on content modeling for more info on how to setup new content models: https://tina.io/docs/schema/
+
   schema: {
     collections: [
-      BlogCollection,
-      PageCollection,
-      GlobalConfigCollection,
+      {
+        name: "headerPage",
+        label: "Page",
+        path: "src/content/headerPages",
+        format: 'mdx',
+        fields: [...basePageFields,
+        {
+          type: "number",
+          name: "order",
+          label: "Rang",
+        },
+        ],
+      },
     ],
   },
 });
